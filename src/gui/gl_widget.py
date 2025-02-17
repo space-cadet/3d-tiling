@@ -27,7 +27,6 @@ class GLWidget(QOpenGLWidget):
         return QSize(800, 600)
 
     def initializeGL(self):
-        glutInit()  # Initialize GLUT
         glEnable(GL_DEPTH_TEST)
         glClearColor(0.0, 0.0, 0.0, 1.0)
 
@@ -66,6 +65,7 @@ class GLWidget(QOpenGLWidget):
 
     def mousePressEvent(self, event):
         self.last_pos = event.position()
+        self.setFocus()  # Set focus when clicking on GL widget
 
     def mouseMoveEvent(self, event):
         if self.last_pos is None:
@@ -109,23 +109,19 @@ class GLWidget(QOpenGLWidget):
             
         # Rotation keys
         elif key == Qt.Key_X:
-            self.scene_manager.rotate_selected(0, 90)
+            increment = self.parent().tools_dock.get_rotation_increment()
+            self.scene_manager.rotate_selected(0, increment)
         elif key == Qt.Key_Y:
-            self.scene_manager.rotate_selected(1, 90)
+            increment = self.parent().tools_dock.get_rotation_increment()
+            self.scene_manager.rotate_selected(1, increment)
         elif key == Qt.Key_Z:
-            self.scene_manager.rotate_selected(2, 90)
-            
-        # Selection keys
-        elif key == Qt.Key_Tab:
-            if event.modifiers() & Qt.ShiftModifier:
-                self.scene_manager.select_previous()
-            else:
-                self.scene_manager.select_next()
+            increment = self.parent().tools_dock.get_rotation_increment()
+            self.scene_manager.rotate_selected(2, increment)
             
         # Add new tetrahedron
         elif key == Qt.Key_N:
             self.scene_manager.add_tetrahedron()
-            
+        
         event.accept()
 
     def scene_updated(self):

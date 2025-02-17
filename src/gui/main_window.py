@@ -1,10 +1,13 @@
-from PySide6.QtWidgets import QMainWindow, QDockWidget, QLabel, QWidget, QVBoxLayout
+from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, 
+                              QDockWidget)
 from PySide6.QtCore import Qt, QSettings
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QKeySequence
 
 from src.core.scene_manager import SceneManager
 from src.gui.gl_widget import GLWidget
 from src.gui.dock_widgets.properties import PropertiesDock
+from src.gui.dock_widgets.scene_info import SceneInfoDock
+from src.gui.dock_widgets.tools import ToolsDock
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -15,7 +18,7 @@ class MainWindow(QMainWindow):
         self.scene_manager = SceneManager()
         
         # Create OpenGL widget
-        self.gl_widget = GLWidget(self.scene_manager)
+        self.gl_widget = GLWidget(self.scene_manager, self)
         self.setCentralWidget(self.gl_widget)
         
         # Create dock widgets
@@ -23,6 +26,9 @@ class MainWindow(QMainWindow):
         
         # Create menu bar
         self.setup_menu()
+        
+        # Create shortcuts
+        self.setup_shortcuts()
         
         # Restore previous layout if exists
         self.restore_layout()
@@ -35,18 +41,16 @@ class MainWindow(QMainWindow):
 
     def setup_docks(self):
         # Scene Info Dock
-        self.scene_info_dock = QDockWidget("Scene Info", self)
-        scene_info_widget = QWidget()
-        scene_info_layout = QVBoxLayout()
-        scene_info_layout.addWidget(QLabel("Total Tetrahedra: 0"))
-        scene_info_widget.setLayout(scene_info_layout)
-        self.scene_info_dock.setWidget(scene_info_widget)
+        self.scene_info_dock = SceneInfoDock(self.scene_manager, self)
         
         # Properties Dock
         self.properties_dock = PropertiesDock(self.scene_manager, self)
         
+        # Tools Dock
+        self.tools_dock = ToolsDock(self.scene_manager, self)
+        
         # Set dock features
-        for dock in [self.scene_info_dock, self.properties_dock]:
+        for dock in [self.scene_info_dock, self.properties_dock, self.tools_dock]:
             dock.setFeatures(QDockWidget.DockWidgetFloatable |
                            QDockWidget.DockWidgetMovable |
                            QDockWidget.DockWidgetClosable)
@@ -54,6 +58,7 @@ class MainWindow(QMainWindow):
         # Add docks to main window
         self.addDockWidget(Qt.LeftDockWidgetArea, self.scene_info_dock)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.properties_dock)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.tools_dock)
 
     def setup_menu(self):
         menubar = self.menuBar()
@@ -77,6 +82,20 @@ class MainWindow(QMainWindow):
         view_menu = menubar.addMenu("View")
         view_menu.addAction(self.scene_info_dock.toggleViewAction())
         view_menu.addAction(self.properties_dock.toggleViewAction())
+        view_menu.addAction(self.tools_dock.toggleViewAction())
+
+    def setup_shortcuts(self):
+        # Next tetrahedron
+        next_shortcut = QAction("Next Tetrahedron", self)
+        next_shortcut.setShortcut(QKeySequence(Qt.Key_Tab))
+        next_shortcut.triggered.connect(self.scene_manager.select_next)
+        self.addAction(next_shortcut)
+        
+        # Previous tetrahedron
+        prev_shortcut = QAction("Previous Tetrahedron", self)
+        prev_shortcut.setShortcut(QKeySequence(Qt.SHIFT | Qt.Key_Tab))
+        prev_shortcut.triggered.connect(self.scene_manager.select_previous)
+        self.addAction(prev_shortcut)
 
     def new_scene(self):
         """Create a new scene"""
