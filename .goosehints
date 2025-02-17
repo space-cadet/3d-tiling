@@ -1,0 +1,35 @@
+Save all chat logs for the current project in a chat_logs.md file.
+
+Ensure that adequate backups of the chat_logs.md file are kept in order to preserve all chats.
+
+Use the following guidelines for chat logs:
+
+    Include the LLM name in the header
+    Add metadata about the conversation
+    Preserve the full transcript with formatting
+    Maintain a clear, readable structure
+
+Sample format for chat logs:
+
+```
+    # Conversation Log: GPT-4o
+
+    ## Conversation Details
+    - **Date**: 2025-02-17
+    - **LLM**: GPT-4o
+    - **Project**: Goose AI Assistant
+
+    ## Conversation Transcript
+
+    ### Initial Request
+    **User**: Please also ensure that all chats are labeled with the name of the LLM used for that conversation.
+
+    **Assistant Response**: 
+    [Full previous response would be inserted here, preserving the markdown formatting]
+
+    ### Follow-up Request
+    **User**: Yes, please
+
+    **Assistant Response**: 
+    [This current response would be inserted here]
+```

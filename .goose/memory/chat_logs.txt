@@ -1,0 +1,25 @@
+# conversation-log goose-project llm-identification
+# Conversation Log: GPT-4o (2025-02-17)
+
+## Conversation Details
+- **Date**: 2025-02-17
+- **LLM**: GPT-4o
+- **Project**: Goose AI Assistant
+
+## Conversation Transcript
+
+### Initial Request
+**User**: Please also ensure that all chats are labeled with the name of the LLM used for that conversation.
+
+**Assistant**: Created memory for labeling conversations with LLM name.
+
+### Follow-up Request
+**User**: Yes, please
+
+**Assistant**: Demonstrated a sample markdown logging format.
+
+### Confirmation
+**User**: No. This is good. Please update logs accordingly. Thanks.
+
+**Assistant**: Updated logging preferences in memory system.
+
