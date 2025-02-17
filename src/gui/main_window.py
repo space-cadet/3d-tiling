@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QDockWidget, QLabel, QWidget, QVBoxLayout
 from PySide6.QtCore import Qt, QSettings
+from PySide6.QtGui import QAction
 
 from src.core.scene_manager import SceneManager
 from src.gui.gl_widget import GLWidget
@@ -59,16 +60,30 @@ class MainWindow(QMainWindow):
         
         # File Menu
         file_menu = menubar.addMenu("File")
-        file_menu.addAction("New")
+        
+        new_action = QAction("New", self)
+        new_action.triggered.connect(self.new_scene)
+        file_menu.addAction(new_action)
+        
         file_menu.addAction("Open")
         file_menu.addAction("Save")
         file_menu.addSeparator()
-        file_menu.addAction("Exit", self.close)
+        
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
         
         # View Menu
         view_menu = menubar.addMenu("View")
         view_menu.addAction(self.scene_info_dock.toggleViewAction())
         view_menu.addAction(self.properties_dock.toggleViewAction())
+
+    def new_scene(self):
+        """Create a new scene"""
+        self.scene_manager.tetrahedra.clear()
+        self.scene_manager.selected_index = -1
+        self.scene_manager.add_tetrahedron()
+        self.scene_manager._notify_observers()
 
     def save_layout(self):
         settings = QSettings('Block', 'TetrahedraTiling')

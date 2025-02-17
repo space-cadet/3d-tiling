@@ -1,6 +1,7 @@
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from OpenGL.GL import *
+from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 class GLWidget(QOpenGLWidget):
@@ -16,6 +17,9 @@ class GLWidget(QOpenGLWidget):
         # Register as scene observer
         self.scene_manager.add_observer(self)
         
+        # Set focus policy to accept keyboard input
+        self.setFocusPolicy(Qt.StrongFocus)
+        
     def minimumSizeHint(self):
         return QSize(400, 400)
 
@@ -23,6 +27,7 @@ class GLWidget(QOpenGLWidget):
         return QSize(800, 600)
 
     def initializeGL(self):
+        glutInit()  # Initialize GLUT
         glEnable(GL_DEPTH_TEST)
         glClearColor(0.0, 0.0, 0.0, 1.0)
 
@@ -60,15 +65,15 @@ class GLWidget(QOpenGLWidget):
         glEnd()
 
     def mousePressEvent(self, event):
-        self.last_pos = event.pos()
+        self.last_pos = event.position()
 
     def mouseMoveEvent(self, event):
         if self.last_pos is None:
-            self.last_pos = event.pos()
+            self.last_pos = event.position()
             return
             
-        dx = event.pos().x() - self.last_pos.x()
-        dy = event.pos().y() - self.last_pos.y()
+        dx = event.position().x() - self.last_pos.x()
+        dy = event.position().y() - self.last_pos.y()
         
         if event.buttons() & Qt.LeftButton:
             self.rot_y += dx * 0.5
@@ -78,11 +83,50 @@ class GLWidget(QOpenGLWidget):
             self.zoom += dy * 0.1
             self.update()
             
-        self.last_pos = event.pos()
+        self.last_pos = event.position()
 
     def wheelEvent(self, event):
         self.zoom += event.angleDelta().y() * 0.01
         self.update()
+
+    def keyPressEvent(self, event):
+        """Handle keyboard input for tetrahedron manipulation"""
+        key = event.key()
+        
+        # Movement keys
+        if key == Qt.Key_W:
+            self.scene_manager.move_selected(0, 1, 0)
+        elif key == Qt.Key_S:
+            self.scene_manager.move_selected(0, -1, 0)
+        elif key == Qt.Key_A:
+            self.scene_manager.move_selected(-1, 0, 0)
+        elif key == Qt.Key_D:
+            self.scene_manager.move_selected(1, 0, 0)
+        elif key == Qt.Key_Q:
+            self.scene_manager.move_selected(0, 0, 1)
+        elif key == Qt.Key_E:
+            self.scene_manager.move_selected(0, 0, -1)
+            
+        # Rotation keys
+        elif key == Qt.Key_X:
+            self.scene_manager.rotate_selected(0, 90)
+        elif key == Qt.Key_Y:
+            self.scene_manager.rotate_selected(1, 90)
+        elif key == Qt.Key_Z:
+            self.scene_manager.rotate_selected(2, 90)
+            
+        # Selection keys
+        elif key == Qt.Key_Tab:
+            if event.modifiers() & Qt.ShiftModifier:
+                self.scene_manager.select_previous()
+            else:
+                self.scene_manager.select_next()
+            
+        # Add new tetrahedron
+        elif key == Qt.Key_N:
+            self.scene_manager.add_tetrahedron()
+            
+        event.accept()
 
     def scene_updated(self):
         """Called when the scene changes"""
