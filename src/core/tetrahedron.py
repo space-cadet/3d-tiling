@@ -88,10 +88,11 @@ class Tetrahedron:
 
     def to_dict(self):
         """Convert tetrahedron data to dictionary for serialization"""
+        # Convert numpy arrays to lists for JSON serialization
         return {
             'name': self.name,
-            'position': self.get_position(),
-            'rotation': self.get_rotation(),
+            'position': [float(x) for x in self.position],  # Convert numpy array to list of floats
+            'rotation': [float(x) for x in self.rotation],  # Convert numpy array to list of floats
             'selected': self.selected
         }
 
@@ -99,6 +100,6 @@ class Tetrahedron:
     def from_dict(cls, data):
         """Create tetrahedron from dictionary data"""
         tetra = cls(position=data['position'], name=data['name'])
-        tetra.set_rotation(*data['rotation'])
+        tetra.set_rotation(*data['rotation'])  # Unpack the rotation list
         tetra.selected = data['selected']
         return tetra

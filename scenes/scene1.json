@@ -1,0 +1,20 @@
+{
+    "tetrahedra": [
+        {
+            "name": "Tetrahedron_1",
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "selected": true
+        }
+    ],
+    "selected_index": 0,
+    "grid_size": 2.0
+}
