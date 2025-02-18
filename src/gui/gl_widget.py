@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt, QSize
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import numpy as np
 
 class GLWidget(QOpenGLWidget):
     def __init__(self, scene_manager, parent=None):
@@ -75,6 +76,9 @@ class GLWidget(QOpenGLWidget):
     def mousePressEvent(self, event):
         self.last_pos = event.position()
         self.setFocus()  # Set focus when clicking on GL widget
+        
+        if event.button() == Qt.LeftButton:
+            self.pick_object(event.position().x(), event.position().y())
 
     def mouseMoveEvent(self, event):
         if self.last_pos is None:
@@ -173,3 +177,41 @@ class GLWidget(QOpenGLWidget):
 
     def get_scene_manager(self):
         return self.scene_manager
+
+    def pick_object(self, x, y):
+        """Pick an object based on mouse click coordinates"""
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glLoadIdentity()
+        
+        # Apply camera transformations
+        glTranslatef(self.camera_pan_x, self.camera_pan_y, self.zoom)
+        glRotatef(self.camera_rot_x, 1, 0, 0)
+        glRotatef(self.camera_rot_y, 0, 1, 0)
+        glRotatef(self.camera_rot_z, 0, 0, 1)
+        
+        # Render each object with a unique color
+        for i, tetra in enumerate(self.scene_manager.tetrahedra):
+            color_id = i + 1
+            color = (
+                (color_id & 0xFF) / 255.0,
+                ((color_id >> 8) & 0xFF) / 255.0,
+                ((color_id >> 16) & 0xFF) / 255.0
+            )
+            glColor3f(*color)
+            tetra.draw()
+        
+        glFlush()
+        
+        # Read the pixel color under the mouse cursor
+        pixel = glReadPixels(x, self.height() - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE)
+        pixel = np.frombuffer(pixel, dtype=np.uint8).reshape(1, 1, 3)
+        color_id = pixel[0, 0, 0] + (pixel[0, 0, 1] << 8) + (pixel[0, 0, 2] << 16)
+        
+        print(f"Picked color ID: {color_id}")  # Debug print
+        
+        # Select the object based on the color ID
+        if color_id > 0 and color_id <= len(self.scene_manager.tetrahedra):
+            self.scene_manager.select_tetrahedron(color_id - 1)
+            print(f"Selected tetrahedron index: {color_id - 1}")  # Debug print
+        else:
+            print("No object selected")  # Debug print

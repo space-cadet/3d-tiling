@@ -44,7 +44,7 @@ class Tetrahedron:
         vertices += self.position
         return vertices
 
-    def draw(self):
+    def draw(self, color=None):
         glPushMatrix()
         
         # Apply object transformations
@@ -54,22 +54,24 @@ class Tetrahedron:
         glRotatef(self.rotation[2], 0, 0, 1)
         
         # Draw selection highlight if selected
-        if self.selected:
+        if self.selected and color is None:
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
             glColor3f(1.0, 1.0, 1.0)  # White outline
             self._draw_faces()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         
         # Draw filled tetrahedron
-        self._draw_faces()
+        self._draw_faces(color)
         
         glPopMatrix()
 
-    def _draw_faces(self):
+    def _draw_faces(self, color=None):
         glBegin(GL_TRIANGLES)
         for i, face in enumerate(self.faces):
-            if not self.selected:
+            if color is None:
                 glColor3fv(self.colors[i])
+            else:
+                glColor3fv(color)
             for vertex_id in face:
                 glVertex3fv(self.base_vertices[vertex_id])
         glEnd()
