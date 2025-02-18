@@ -10,6 +10,7 @@ from src.gui.dock_widgets.properties import PropertiesDock
 from src.gui.dock_widgets.scene_info import SceneInfoDock
 from src.gui.dock_widgets.tools import ToolsDock
 from src.gui.dock_widgets.object_list import ObjectListDock
+from src.gui.dock_widgets.llm_dock import LLMDock  # Import the new LLM dock
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -58,9 +59,13 @@ class MainWindow(QMainWindow):
         self.object_list_dock = ObjectListDock(self.scene_manager, self)
         self.object_list_dock.setObjectName("ObjectListDock")
         
+        # LLM Dock
+        self.llm_dock = LLMDock(self)
+        self.llm_dock.setObjectName("LLMDock")
+        
         # Set dock features
         for dock in [self.scene_info_dock, self.properties_dock, 
-                    self.tools_dock, self.object_list_dock]:
+                    self.tools_dock, self.object_list_dock, self.llm_dock]:
             dock.setFeatures(QDockWidget.DockWidgetFloatable |
                            QDockWidget.DockWidgetMovable |
                            QDockWidget.DockWidgetClosable)
@@ -70,6 +75,7 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, self.properties_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.tools_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.object_list_dock)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.llm_dock)  # Add the LLM dock
 
     def setup_menu(self):
         menubar = self.menuBar()
@@ -107,6 +113,8 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self.scene_info_dock.toggleViewAction())
         view_menu.addAction(self.properties_dock.toggleViewAction())
         view_menu.addAction(self.tools_dock.toggleViewAction())
+        view_menu.addAction(self.object_list_dock.toggleViewAction())
+        view_menu.addAction(self.llm_dock.toggleViewAction())  # Add the LLM dock toggle
 
     def setup_shortcuts(self):
         # Next tetrahedron
