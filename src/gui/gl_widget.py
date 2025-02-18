@@ -9,10 +9,19 @@ class GLWidget(QOpenGLWidget):
         super().__init__(parent)
         self.scene_manager = scene_manager
         self.last_pos = None
-        self.rot_x = 0.0
-        self.rot_y = 0.0
-        self.rot_z = 0.0
+        
+        # Camera transformations
+        self.camera_rot_x = 0.0
+        self.camera_rot_y = 0.0
+        self.camera_rot_z = 0.0
+        self.camera_pan_x = 0.0
+        self.camera_pan_y = 0.0
         self.zoom = -10.0
+        
+        # Object transformations
+        self.object_rot_x = 0.0
+        self.object_rot_y = 0.0
+        self.object_rot_z = 0.0
         
         # Register as scene observer
         self.scene_manager.add_observer(self)
@@ -42,10 +51,10 @@ class GLWidget(QOpenGLWidget):
         glLoadIdentity()
         
         # Apply camera transformations
-        glTranslatef(0, 0, self.zoom)
-        glRotatef(self.rot_x, 1, 0, 0)
-        glRotatef(self.rot_y, 0, 1, 0)
-        glRotatef(self.rot_z, 0, 0, 1)
+        glTranslatef(self.camera_pan_x, self.camera_pan_y, self.zoom)
+        glRotatef(self.camera_rot_x, 1, 0, 0)
+        glRotatef(self.camera_rot_y, 0, 1, 0)
+        glRotatef(self.camera_rot_z, 0, 0, 1)
         
         # Draw grid
         self.draw_grid()
@@ -75,18 +84,52 @@ class GLWidget(QOpenGLWidget):
         dx = event.position().x() - self.last_pos.x()
         dy = event.position().y() - self.last_pos.y()
         
+        modifiers = event.modifiers()
+        
         if event.buttons() & Qt.LeftButton:
-            self.rot_y += dx * 0.5
-            self.rot_x += dy * 0.5
+            if modifiers & Qt.ShiftModifier and self.scene_manager.get_selected_tetrahedron():
+                # Rotate selected object
+                selected = self.scene_manager.get_selected_tetrahedron()
+                current_rot = list(selected.get_rotation())
+                current_rot[1] += dx * 0.5  # Y-axis rotation
+                current_rot[0] += dy * 0.5  # X-axis rotation
+                selected.set_rotation(*current_rot)
+                self.scene_manager._notify_observers()
+            else:
+                # Rotate camera view
+                self.camera_rot_y += dx * 0.5
+                self.camera_rot_x += dy * 0.5
             self.update()
         elif event.buttons() & Qt.RightButton:
-            self.zoom += dy * 0.1
+            if modifiers & Qt.ShiftModifier and self.scene_manager.get_selected_tetrahedron():
+                # Move selected object in XY plane
+                dx_world = dx * 0.01 * self.scene_manager.grid_size
+                dy_world = -dy * 0.01 * self.scene_manager.grid_size
+                self.scene_manager.move_selected(dx_world, dy_world, 0)
+            else:
+                # Zoom camera
+                self.zoom += dy * 0.1
             self.update()
+        elif event.buttons() & Qt.MiddleButton and modifiers & Qt.ShiftModifier:
+            if self.scene_manager.get_selected_tetrahedron():
+                # Move selected object in Z axis
+                dz_world = -dy * 0.01 * self.scene_manager.grid_size
+                self.scene_manager.move_selected(0, 0, dz_world)
+                self.update()
             
         self.last_pos = event.position()
 
     def wheelEvent(self, event):
-        self.zoom += event.angleDelta().y() * 0.01
+        if event.modifiers() & Qt.ShiftModifier and self.scene_manager.get_selected_tetrahedron():
+            # Rotate selected object around Z axis
+            selected = self.scene_manager.get_selected_tetrahedron()
+            current_rot = list(selected.get_rotation())
+            current_rot[2] += event.angleDelta().y() * 0.1
+            selected.set_rotation(*current_rot)
+            self.scene_manager._notify_observers()
+        else:
+            # Zoom camera
+            self.zoom += event.angleDelta().y() * 0.01
         self.update()
 
     def keyPressEvent(self, event):
