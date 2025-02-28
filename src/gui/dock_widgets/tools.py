@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QDockWidget, QWidget, QVBoxLayout, QPushButton, QSpinBox, QLabel, QGroupBox
+from PySide6.QtWidgets import QDockWidget, QWidget, QVBoxLayout, QPushButton, QSpinBox, QLabel, QGroupBox, QDoubleSpinBox
 from PySide6.QtCore import Qt
 
 class ToolsDock(QDockWidget):
@@ -13,6 +13,7 @@ class ToolsDock(QDockWidget):
         # Create Tools
         self.create_tetrahedron_tools()
         self.create_rotation_settings()
+        self.create_lighting_settings()
         
         # Add stretch to push everything to the top
         self.main_layout.addStretch()
@@ -47,9 +48,10 @@ class ToolsDock(QDockWidget):
         increment_label = QLabel("Rotation Increment:")
         self.rotation_increment = QSpinBox()
         self.rotation_increment.setRange(1, 90)
-        self.rotation_increment.setValue(90)  # Default value
+        self.rotation_increment.setValue(15)  # Default value
         self.rotation_increment.setSingleStep(1)
         self.rotation_increment.setSuffix("°")
+        self.rotation_increment.setToolTip("Rotation increment angle (degrees)")
         
         settings_layout.addWidget(increment_label)
         settings_layout.addWidget(self.rotation_increment)
@@ -57,6 +59,44 @@ class ToolsDock(QDockWidget):
         settings_group.setLayout(settings_layout)
         self.main_layout.addWidget(settings_group)
         
+    def create_lighting_settings(self):
+        """Create lighting position controls"""
+        lighting_group = QGroupBox("Lighting Position")
+        lighting_layout = QVBoxLayout()
+        
+        # X Position
+        x_label = QLabel("X:")
+        self.light_x = QDoubleSpinBox()
+        self.light_x.setRange(-10.0, 10.0)
+        self.light_x.setValue(4.0)
+        self.light_x.setSingleStep(0.5)
+        self.light_x.valueChanged.connect(self.update_light_position)
+        lighting_layout.addWidget(x_label)
+        lighting_layout.addWidget(self.light_x)
+        
+        # Y Position
+        y_label = QLabel("Y:")
+        self.light_y = QDoubleSpinBox()
+        self.light_y.setRange(-10.0, 10.0)
+        self.light_y.setValue(4.0)
+        self.light_y.setSingleStep(0.5)
+        self.light_y.valueChanged.connect(self.update_light_position)
+        lighting_layout.addWidget(y_label)
+        lighting_layout.addWidget(self.light_y)
+        
+        # Z Position
+        z_label = QLabel("Z:")
+        self.light_z = QDoubleSpinBox()
+        self.light_z.setRange(-10.0, 10.0)
+        self.light_z.setValue(4.0)
+        self.light_z.setSingleStep(0.5)
+        self.light_z.valueChanged.connect(self.update_light_position)
+        lighting_layout.addWidget(z_label)
+        lighting_layout.addWidget(self.light_z)
+        
+        lighting_group.setLayout(lighting_layout)
+        self.main_layout.addWidget(lighting_group)
+
     def delete_selected(self):
         """Delete the currently selected tetrahedron"""
         if self.scene_manager.selected_index >= 0:
@@ -65,3 +105,14 @@ class ToolsDock(QDockWidget):
     def get_rotation_increment(self):
         """Get the current rotation increment value"""
         return self.rotation_increment.value()
+        
+    def update_light_position(self):
+        """Update light position when controls change"""
+        if hasattr(self.parent(), 'gl_widget'):
+            self.parent().gl_widget.light_pos = [
+                self.light_x.value(),
+                self.light_y.value(),
+                self.light_z.value(),
+                1.0
+            ]
+            self.parent().gl_widget.update()

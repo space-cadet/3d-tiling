@@ -38,7 +38,31 @@ class GLWidget(QOpenGLWidget):
 
     def initializeGL(self):
         glEnable(GL_DEPTH_TEST)
-        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+        glEnable(GL_COLOR_MATERIAL)
+        glClearColor(0.1, 0.1, 0.1, 1.0)  # Slightly brighter background
+        
+        # Configure lights
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.2, 0.2, 0.2, 1.0])  # Add ambient light
+        
+        # Configure main light (light0)
+        self.light0_pos = [10.0, 10.0, 10.0, 1.0]  # Position further back and higher
+        glLightfv(GL_LIGHT0, GL_POSITION, self.light0_pos)
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        
+        # Configure secondary light (light1)
+        glEnable(GL_LIGHT1)
+        self.light1_pos = [-10.0, -10.0, 10.0, 1.0]  # Opposite position
+        glLightfv(GL_LIGHT1, GL_POSITION, self.light1_pos)
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, [0.4, 0.4, 0.4, 1.0])  # Softer light
+        glLightfv(GL_LIGHT1, GL_SPECULAR, [0.4, 0.4, 0.4, 1.0])
+        
+        # Set up material properties
+        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [0.8, 0.8, 0.8, 1.0])
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0)  # Lower shininess for softer highlights
 
     def resizeGL(self, width, height):
         glViewport(0, 0, width, height)
@@ -50,6 +74,10 @@ class GLWidget(QOpenGLWidget):
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
+        
+        # Update light positions
+        glLightfv(GL_LIGHT0, GL_POSITION, self.light0_pos)
+        glLightfv(GL_LIGHT1, GL_POSITION, self.light1_pos)
         
         # Apply camera transformations
         glTranslatef(self.camera_pan_x, self.camera_pan_y, self.zoom)
@@ -77,7 +105,8 @@ class GLWidget(QOpenGLWidget):
         self.last_pos = event.position()
         self.setFocus()  # Set focus when clicking on GL widget
         
-        if event.button() == Qt.LeftButton:
+        # Only perform picking when not panning (not holding Option key)
+        if event.button() == Qt.LeftButton and not (event.modifiers() & Qt.AltModifier):
             self.pick_object(event.position().x(), event.position().y())
 
     def mouseMoveEvent(self, event):
@@ -91,7 +120,11 @@ class GLWidget(QOpenGLWidget):
         modifiers = event.modifiers()
         
         if event.buttons() & Qt.LeftButton:
-            if modifiers & Qt.ShiftModifier and self.scene_manager.get_selected_tetrahedron():
+            if modifiers & Qt.AltModifier:
+                # Pan camera when Option (Alt) key is pressed
+                self.camera_pan_x += dx * 0.01
+                self.camera_pan_y -= dy * 0.01
+            elif modifiers & Qt.ShiftModifier and self.scene_manager.get_selected_tetrahedron():
                 # Rotate selected object
                 selected = self.scene_manager.get_selected_tetrahedron()
                 current_rot = list(selected.get_rotation())
