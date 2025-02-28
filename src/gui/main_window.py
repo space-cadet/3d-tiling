@@ -2,6 +2,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                               QDockWidget, QFileDialog, QMessageBox)
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtGui import QAction, QKeySequence
+import os
 
 from src.core.scene_manager import SceneManager
 from src.core.file_manager import FileManager
@@ -19,6 +20,15 @@ class MainWindow(QMainWindow):
         
         # Create scene manager
         self.scene_manager = SceneManager()
+        
+        # Load last session if exists
+        self.last_session_path = "scenes/last_session.json"
+        if os.path.exists(self.last_session_path):
+            try:
+                self.scene_manager.load_scene(self.last_session_path)
+            except Exception as e:
+                QMessageBox.warning(self, "Warning", 
+                    f"Failed to load last session: {str(e)}")
         
         # Create OpenGL widget
         self.gl_widget = GLWidget(self.scene_manager, self)
@@ -200,5 +210,13 @@ class MainWindow(QMainWindow):
             self.restoreState(settings.value('windowState'))
             
     def closeEvent(self, event):
+        # Save current scene before closing
+        try:
+            os.makedirs("scenes", exist_ok=True)
+            self.scene_manager.save_scene(self.last_session_path)
+        except Exception as e:
+            QMessageBox.warning(self, "Warning", 
+                f"Failed to save session: {str(e)}")
+        
         self.save_layout()
         super().closeEvent(event)
