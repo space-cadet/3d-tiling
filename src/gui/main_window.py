@@ -133,6 +133,23 @@ class MainWindow(QMainWindow):
         
         file_menu.addSeparator()
         
+        # Edit submenu
+        edit_menu = file_menu.addMenu("Edit")
+        
+        # Undo
+        undo_action = QAction("Undo", self)
+        undo_action.setShortcut(QKeySequence.Undo)
+        undo_action.triggered.connect(self.scene_manager.history.undo)
+        edit_menu.addAction(undo_action)
+        
+        # Redo
+        redo_action = QAction("Redo", self)
+        redo_action.setShortcut(QKeySequence.Redo)
+        redo_action.triggered.connect(self.scene_manager.history.redo)
+        edit_menu.addAction(redo_action)
+        
+        file_menu.addSeparator()
+        
         # Exit
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.close)
@@ -158,6 +175,18 @@ class MainWindow(QMainWindow):
         prev_shortcut.setShortcut(QKeySequence(Qt.SHIFT | Qt.Key_Tab))
         prev_shortcut.triggered.connect(self.scene_manager.select_previous)
         self.addAction(prev_shortcut)
+
+        # Undo
+        undo_shortcut = QAction("Undo", self)
+        undo_shortcut.setShortcut(QKeySequence.Undo)
+        undo_shortcut.triggered.connect(self.scene_manager.history.undo)
+        self.addAction(undo_shortcut)
+        
+        # Redo
+        redo_shortcut = QAction("Redo", self)
+        redo_shortcut.setShortcut(QKeySequence.Redo)
+        redo_shortcut.triggered.connect(self.scene_manager.history.redo)
+        self.addAction(redo_shortcut)
 
     def new_scene(self):
         """Create a new scene"""

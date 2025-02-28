@@ -1,6 +1,7 @@
 from typing import List, Optional
 import json
 from .tetrahedron import Tetrahedron
+from .history import History
 
 class SceneManager:
     def __init__(self):
@@ -8,6 +9,7 @@ class SceneManager:
         self.selected_index: int = -1
         self.grid_size: float = 2.0
         self._observers = []
+        self.history = History()
 
     def add_observer(self, observer):
         """Add an observer that will be notified of scene changes"""
@@ -24,13 +26,11 @@ class SceneManager:
 
     def add_tetrahedron(self, position=(0, 0, 0)) -> Tetrahedron:
         """Add a new tetrahedron to the scene"""
-        name = f"Tetrahedron_{len(self.tetrahedra) + 1}"
-        tetra = Tetrahedron(position, name)
-        self.tetrahedra.append(tetra)
-        self.selected_index = len(self.tetrahedra) - 1
-        self.update_selection()
-        self._notify_observers()
-        return tetra
+        from .history import AddTetrahedronCommand
+        command = AddTetrahedronCommand(self, position)
+        command.execute()
+        self.history.push(command)
+        return self.tetrahedra[-1]
 
     def remove_tetrahedron(self, index: int):
         """Remove a tetrahedron from the scene"""
@@ -75,22 +75,17 @@ class SceneManager:
 
     def move_selected(self, dx: float, dy: float, dz: float):
         """Move the selected tetrahedron"""
-        if selected := self.get_selected_tetrahedron():
-            pos = selected.get_position()
-            selected.set_position(
-                pos[0] + dx * self.grid_size,
-                pos[1] + dy * self.grid_size,
-                pos[2] + dz * self.grid_size
-            )
-            self._notify_observers()
+        from .history import MoveTetrahedronCommand
+        command = MoveTetrahedronCommand(self, dx, dy, dz)
+        command.execute()
+        self.history.push(command)
 
     def rotate_selected(self, axis: int, angle: float):
         """Rotate the selected tetrahedron"""
-        if selected := self.get_selected_tetrahedron():
-            rot = list(selected.get_rotation())
-            rot[axis] = (rot[axis] + angle) % 360
-            selected.set_rotation(*rot)
-            self._notify_observers()
+        from .history import RotateTetrahedronCommand
+        command = RotateTetrahedronCommand(self, axis, angle)
+        command.execute()
+        self.history.push(command)
 
     def draw_all(self):
         """Draw all tetrahedra in the scene"""
