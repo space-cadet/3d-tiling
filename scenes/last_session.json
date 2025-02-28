@@ -1,48 +1,33 @@
 {
-  "tetrahedra": [
-    {
-      "name": "Tetrahedron_1",
-      "position": [
-        0.0,
-        0.0,
-        0.0
-      ],
-      "rotation": [
-        0.0,
-        0.0,
-        0.0
-      ],
-      "selected": false
-    },
-    {
-      "name": "Tetrahedron_2",
-      "position": [
-        0.0,
-        4.0,
-        0.0
-      ],
-      "rotation": [
-        0.0,
-        0.0,
-        0.0
-      ],
-      "selected": false
-    },
-    {
-      "name": "Tetrahedron_3",
-      "position": [
-        0.0,
-        0.0,
-        0.0
-      ],
-      "rotation": [
-        0.0,
-        0.0,
-        0.0
-      ],
-      "selected": true
-    }
-  ],
-  "selected_index": 2,
-  "grid_size": 2.0
+  "tetrahedra": [],
+  "selected_index": -1,
+  "grid_size": 2.0,
+  "camera_settings": {
+    "camera_rot_x": 27.6640625,
+    "camera_rot_y": 317.962890625,
+    "camera_rot_z": 0.0,
+    "camera_pan_x": 0.0,
+    "camera_pan_y": 0.0,
+    "zoom": -10.0
+  },
+  "lighting_settings": {
+    "light0_pos": [
+      15.0,
+      15.0,
+      15.0,
+      1.0
+    ],
+    "light1_pos": [
+      -15.0,
+      -15.0,
+      15.0,
+      1.0
+    ],
+    "light2_pos": [
+      0.0,
+      0.0,
+      20.0,
+      1.0
+    ]
+  }
 }

@@ -23,15 +23,34 @@ class MainWindow(QMainWindow):
         
         # Load last session if exists
         self.last_session_path = "scenes/last_session.json"
+        self.loaded_session = False
+        
         if os.path.exists(self.last_session_path):
             try:
-                self.scene_manager.load_scene(self.last_session_path)
+                camera_settings, lighting_settings = self.scene_manager.load_scene(self.last_session_path)
+                self.loaded_session = True
+                
+                # Create OpenGL widget first so we can apply settings to it
+                self.gl_widget = GLWidget(self.scene_manager, self)
+                
+                # Apply camera and lighting settings if they exist
+                if camera_settings:
+                    self.gl_widget.set_camera_settings(camera_settings)
+                if lighting_settings:
+                    self.gl_widget.set_lighting_settings(lighting_settings)
+                    
             except Exception as e:
                 QMessageBox.warning(self, "Warning", 
                     f"Failed to load last session: {str(e)}")
+                # Create OpenGL widget if loading failed
+                self.gl_widget = GLWidget(self.scene_manager, self)
+                self.loaded_session = False
+        else:
+            # Create OpenGL widget if no last session exists
+            self.gl_widget = GLWidget(self.scene_manager, self)
+            self.loaded_session = False
         
-        # Create OpenGL widget
-        self.gl_widget = GLWidget(self.scene_manager, self)
+        # Set the OpenGL widget as the central widget
         self.setCentralWidget(self.gl_widget)
         
         # Create dock widgets
@@ -49,8 +68,9 @@ class MainWindow(QMainWindow):
         # Set initial window size
         self.resize(1200, 800)
         
-        # Add initial tetrahedron
-        self.scene_manager.add_tetrahedron()
+        # Add initial tetrahedron only if we didn't load a session
+        if not self.loaded_session:
+            self.scene_manager.add_tetrahedron()
 
     def setup_docks(self):
         # Scene Info Dock
@@ -158,6 +178,8 @@ class MainWindow(QMainWindow):
         if filepath:
             try:
                 data = FileManager.load_scene(filepath)
+                
+                # Load tetrahedra data
                 self.scene_manager.tetrahedra.clear()
                 for tetra_data in data['tetrahedra']:
                     tetra = self.scene_manager.add_tetrahedron()
@@ -167,6 +189,16 @@ class MainWindow(QMainWindow):
                 self.scene_manager.selected_index = data.get('selected_index', -1)
                 self.scene_manager.grid_size = data.get('grid_size', 2.0)
                 self.scene_manager.update_selection()
+                
+                # Load camera and lighting settings if they exist
+                camera_settings = data.get('camera_settings')
+                lighting_settings = data.get('lighting_settings')
+                
+                if camera_settings:
+                    self.gl_widget.set_camera_settings(camera_settings)
+                if lighting_settings:
+                    self.gl_widget.set_lighting_settings(lighting_settings)
+                
                 self.scene_manager._notify_observers()
                 
                 QMessageBox.information(self, "Success", "Scene loaded successfully")
@@ -184,10 +216,17 @@ class MainWindow(QMainWindow):
         
         if filepath:
             try:
+                # Get camera and lighting settings
+                camera_settings = self.gl_widget.get_camera_settings()
+                lighting_settings = self.gl_widget.get_lighting_settings()
+                
+                # Create scene data with all settings
                 scene_data = {
                     'tetrahedra': [t.to_dict() for t in self.scene_manager.tetrahedra],
                     'selected_index': self.scene_manager.selected_index,
-                    'grid_size': self.scene_manager.grid_size
+                    'grid_size': self.scene_manager.grid_size,
+                    'camera_settings': camera_settings,
+                    'lighting_settings': lighting_settings
                 }
                 
                 if FileManager.save_scene(filepath, scene_data):
@@ -213,7 +252,17 @@ class MainWindow(QMainWindow):
         # Save current scene before closing
         try:
             os.makedirs("scenes", exist_ok=True)
-            self.scene_manager.save_scene(self.last_session_path)
+            
+            # Get camera and lighting settings from the GL widget
+            camera_settings = self.gl_widget.get_camera_settings()
+            lighting_settings = self.gl_widget.get_lighting_settings()
+            
+            # Save scene with camera and lighting settings
+            self.scene_manager.save_scene(
+                self.last_session_path,
+                camera_settings=camera_settings,
+                lighting_settings=lighting_settings
+            )
         except Exception as e:
             QMessageBox.warning(self, "Warning", 
                 f"Failed to save session: {str(e)}")

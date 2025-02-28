@@ -97,13 +97,20 @@ class SceneManager:
         for tetra in self.tetrahedra:
             tetra.draw()
 
-    def save_scene(self, filename: str):
+    def save_scene(self, filename: str, camera_settings=None, lighting_settings=None):
         """Save the scene to a file"""
         data = {
             'tetrahedra': [t.to_dict() for t in self.tetrahedra],
             'selected_index': self.selected_index,
             'grid_size': self.grid_size
         }
+        
+        # Add camera and lighting settings if provided
+        if camera_settings:
+            data['camera_settings'] = camera_settings
+        if lighting_settings:
+            data['lighting_settings'] = lighting_settings
+            
         with open(filename, 'w') as f:
             json.dump(data, f, indent=2)
 
@@ -117,3 +124,9 @@ class SceneManager:
         self.grid_size = data['grid_size']
         self.update_selection()
         self._notify_observers()
+        
+        # Return camera and lighting settings if they exist in the file
+        camera_settings = data.get('camera_settings')
+        lighting_settings = data.get('lighting_settings')
+        
+        return camera_settings, lighting_settings

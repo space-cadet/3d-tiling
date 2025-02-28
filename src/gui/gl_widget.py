@@ -18,6 +18,11 @@ class GLWidget(QOpenGLWidget):
         self.camera_pan_x = 0.0
         self.camera_pan_y = 0.0
         self.zoom = -10.0
+
+        # Initialize light positions with default values
+        self.light0_pos = [15.0, 15.0, 15.0, 1.0]
+        self.light1_pos = [-15.0, -15.0, 15.0, 1.0]
+        self.light2_pos = [0.0, 0.0, 20.0, 1.0]
         
         # Object transformations
         self.object_rot_x = 0.0
@@ -47,21 +52,18 @@ class GLWidget(QOpenGLWidget):
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.4, 0.4, 0.4, 1.0])  # Increased ambient light
         
         # Configure main light (light0)
-        self.light0_pos = [15.0, 15.0, 15.0, 1.0]  # Position further back and higher
         glLightfv(GL_LIGHT0, GL_POSITION, self.light0_pos)
         glLightfv(GL_LIGHT0, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
         glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         
         # Configure secondary light (light1)
         glEnable(GL_LIGHT1)
-        self.light1_pos = [-15.0, -15.0, 15.0, 1.0]  # Opposite position
         glLightfv(GL_LIGHT1, GL_POSITION, self.light1_pos)
         glLightfv(GL_LIGHT1, GL_DIFFUSE, [0.6, 0.6, 0.6, 1.0])  # Brighter secondary light
         glLightfv(GL_LIGHT1, GL_SPECULAR, [0.6, 0.6, 0.6, 1.0])
         
         # Configure third light (light2)
         glEnable(GL_LIGHT2)
-        self.light2_pos = [0.0, 0.0, 20.0, 1.0]  # Top-down fill light
         glLightfv(GL_LIGHT2, GL_POSITION, self.light2_pos)
         glLightfv(GL_LIGHT2, GL_DIFFUSE, [0.4, 0.4, 0.4, 1.0])
         glLightfv(GL_LIGHT2, GL_SPECULAR, [0.4, 0.4, 0.4, 1.0])
@@ -240,6 +242,49 @@ class GLWidget(QOpenGLWidget):
 
     def get_scene_manager(self):
         return self.scene_manager
+        
+    def get_camera_settings(self):
+        """Return the current camera settings as a dictionary"""
+        return {
+            'camera_rot_x': self.camera_rot_x,
+            'camera_rot_y': self.camera_rot_y,
+            'camera_rot_z': self.camera_rot_z,
+            'camera_pan_x': self.camera_pan_x,
+            'camera_pan_y': self.camera_pan_y,
+            'zoom': self.zoom
+        }
+        
+    def set_camera_settings(self, settings):
+        """Set camera settings from a dictionary"""
+        if not settings:
+            return
+            
+        self.camera_rot_x = settings.get('camera_rot_x', self.camera_rot_x)
+        self.camera_rot_y = settings.get('camera_rot_y', self.camera_rot_y)
+        self.camera_rot_z = settings.get('camera_rot_z', self.camera_rot_z)
+        self.camera_pan_x = settings.get('camera_pan_x', self.camera_pan_x)
+        self.camera_pan_y = settings.get('camera_pan_y', self.camera_pan_y)
+        self.zoom = settings.get('zoom', self.zoom)
+        self.update()
+        
+    def get_lighting_settings(self):
+        """Return the current lighting settings as a dictionary"""
+        # Convert numpy arrays to lists for JSON serialization
+        return {
+            'light0_pos': self.light0_pos if isinstance(self.light0_pos, list) else self.light0_pos.tolist(),
+            'light1_pos': self.light1_pos if isinstance(self.light1_pos, list) else self.light1_pos.tolist(),
+            'light2_pos': self.light2_pos if isinstance(self.light2_pos, list) else self.light2_pos.tolist()
+        }
+        
+    def set_lighting_settings(self, settings):
+        """Set lighting settings from a dictionary"""
+        if not settings:
+            return
+            
+        self.light0_pos = settings.get('light0_pos', self.light0_pos)
+        self.light1_pos = settings.get('light1_pos', self.light1_pos)
+        self.light2_pos = settings.get('light2_pos', self.light2_pos)
+        self.update()
 
     def pick_object(self, x, y):
         """Pick an object based on mouse click coordinates"""
