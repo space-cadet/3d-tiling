@@ -105,10 +105,10 @@ class Tetrahedron:
             if color is None:
                 # Set material properties to match face color
                 face_color = self.colors[i]
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [c * 0.2 for c in face_color] + [1.0])
-                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, face_color + [1.0])
-                glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [0.8, 0.8, 0.8, 1.0])
-                glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0)
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [c * 0.4 for c in face_color] + [1.0])  # Increased ambient
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [c * 1.2 for c in face_color] + [1.0])  # Boosted diffuse
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])  # Full specular
+                glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 64.0)  # Higher shininess
                 glColor3fv(face_color)
             else:
                 # For selection highlight or picking, use flat color without lighting effects

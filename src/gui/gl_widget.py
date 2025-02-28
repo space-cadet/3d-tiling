@@ -41,28 +41,42 @@ class GLWidget(QOpenGLWidget):
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
         glEnable(GL_COLOR_MATERIAL)
-        glClearColor(0.1, 0.1, 0.1, 1.0)  # Slightly brighter background
+        glClearColor(0.3, 0.3, 0.35, 1.0)  # Brighter neutral background
         
         # Configure lights
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.2, 0.2, 0.2, 1.0])  # Add ambient light
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.4, 0.4, 0.4, 1.0])  # Increased ambient light
         
         # Configure main light (light0)
-        self.light0_pos = [10.0, 10.0, 10.0, 1.0]  # Position further back and higher
+        self.light0_pos = [15.0, 15.0, 15.0, 1.0]  # Position further back and higher
         glLightfv(GL_LIGHT0, GL_POSITION, self.light0_pos)
         glLightfv(GL_LIGHT0, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
         glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         
         # Configure secondary light (light1)
         glEnable(GL_LIGHT1)
-        self.light1_pos = [-10.0, -10.0, 10.0, 1.0]  # Opposite position
+        self.light1_pos = [-15.0, -15.0, 15.0, 1.0]  # Opposite position
         glLightfv(GL_LIGHT1, GL_POSITION, self.light1_pos)
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, [0.4, 0.4, 0.4, 1.0])  # Softer light
-        glLightfv(GL_LIGHT1, GL_SPECULAR, [0.4, 0.4, 0.4, 1.0])
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, [0.6, 0.6, 0.6, 1.0])  # Brighter secondary light
+        glLightfv(GL_LIGHT1, GL_SPECULAR, [0.6, 0.6, 0.6, 1.0])
+        
+        # Configure third light (light2)
+        glEnable(GL_LIGHT2)
+        self.light2_pos = [0.0, 0.0, 20.0, 1.0]  # Top-down fill light
+        glLightfv(GL_LIGHT2, GL_POSITION, self.light2_pos)
+        glLightfv(GL_LIGHT2, GL_DIFFUSE, [0.4, 0.4, 0.4, 1.0])
+        glLightfv(GL_LIGHT2, GL_SPECULAR, [0.4, 0.4, 0.4, 1.0])
         
         # Set up material properties
         glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [0.8, 0.8, 0.8, 1.0])
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0)  # Lower shininess for softer highlights
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])  # Increased specular
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 64.0)  # Higher shininess for sharper highlights
+        
+        # Enable fog for depth perception
+        glEnable(GL_FOG)
+        glFogi(GL_FOG_MODE, GL_LINEAR)
+        glFogfv(GL_FOG_COLOR, [0.3, 0.3, 0.35, 1.0])  # Match background color
+        glFogf(GL_FOG_START, 15.0)
+        glFogf(GL_FOG_END, 25.0)
 
     def resizeGL(self, width, height):
         glViewport(0, 0, width, height)
@@ -92,13 +106,29 @@ class GLWidget(QOpenGLWidget):
         self.scene_manager.draw_all()
 
     def draw_grid(self):
-        glColor3f(0.2, 0.2, 0.2)
+        # Draw main grid lines with higher contrast
+        glColor3f(0.4, 0.4, 0.4)  # Brighter grid color
+        glLineWidth(1.5)
         glBegin(GL_LINES)
         for i in range(-5, 6):
+            # X-axis lines
             glVertex3f(i * 2.0, -10.0, 0)
             glVertex3f(i * 2.0, 10.0, 0)
+            # Y-axis lines
             glVertex3f(-10.0, i * 2.0, 0)
             glVertex3f(10.0, i * 2.0, 0)
+        glEnd()
+        
+        # Draw thicker center axes
+        glColor3f(0.6, 0.6, 0.6)
+        glLineWidth(2.5)
+        glBegin(GL_LINES)
+        # X-axis
+        glVertex3f(-10.0, 0.0, 0)
+        glVertex3f(10.0, 0.0, 0)
+        # Y-axis
+        glVertex3f(0.0, -10.0, 0)
+        glVertex3f(0.0, 10.0, 0)
         glEnd()
 
     def mousePressEvent(self, event):

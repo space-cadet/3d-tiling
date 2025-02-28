@@ -1,0 +1,62 @@
+{
+    "tetrahedra": [
+        {
+            "name": "Tetrahedron_1",
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "selected": false
+        },
+        {
+            "name": "Tetrahedron_2",
+            "position": [
+                0.0,
+                4.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "selected": false
+        },
+        {
+            "name": "Tetrahedron_3",
+            "position": [
+                -4.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "selected": false
+        },
+        {
+            "name": "Tetrahedron_4",
+            "position": [
+                -4.0,
+                4.0,
+                0.0
+            ],
+            "rotation": [
+                75.0,
+                0.0,
+                90.0
+            ],
+            "selected": true
+        }
+    ],
+    "selected_index": 3,
+    "grid_size": 2.0
+}
